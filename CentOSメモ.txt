@@ -1,0 +1,103 @@
+■参考
+　・全体：【https://qiita.com/SkyLaptor/items/1036d470c2d4117b9954】
+　・teraterm設定：https://www.j-oosk.com/teraterm/logging/114/
+
+■環境
+・VMware Workstation 15 Player
+・CentOS-7-x86_64-DVD-1810.iso
+
+
+
+■仮想マシン設定
+　・メモリ：１GB
+　・プロセッサ：１
+　・ハードディスク：20GB
+　・ネットワーク：NAT
+　・サウンドカード：自動検出
+　・プリンタ：あり
+　・ディスプレイ：自動検出
+
+
+■インストール設定
+　・言語：日本語
+　・ホスト名：chinpan.localdomain
+　・NIC設定
+　　－全般：この接続が可能になったときは自動的に接続する。
+　　－IPv4のセッティング：手動、192.168.85.128/24、DNS：8.8.8.8,8.8.4.4
+　　－IPv6のセッティング：無視する
+
+　・ソフトウェアの選択：最小限インストール
+　・パーティション構成：パーティションを自分で構成する。
+　・パーティション構成
+　　－/boot：500Mib
+　　－/boot/efi：200Mib
+　　－swap：2048Mib
+　　－/var：8192Mib
+　　－/：残り全部(約9.3GB)
+
+
+■インストール後ネットワーク設定(ホスト側)
+　・参考【https://kitigai.hatenablog.com/entry/2018/06/28/233000】
+　・インターネット接続しているNICの共有設定で、【VMnet8】を選択する。
+　・VMnet8の状態→詳細から、IPv4アドレスを確認する。
+　・C:\ProgramData\VMware\vmnetnat.confの【# NAT gateway address】配下のアドレスを確認する
+　・VMnet8のIPv4と差異がある場合は、vmnet.confのアドレス帯に合わせる。末尾は１にする。GWはgoogleDNSで。
+
+
+■インストール後ネットワーク設定(ゲスト側)
+　・ゲスト側のネットワーク設定のDNSもホスト側のVMnet8に合わせる。
+　
+
+■ネットワークがつながったら
+
+　・システムアップデート
+　　# yum clean all
+　　# yum update
+　　# reboot 
+
+　・net-toolsインストール
+　　# yum install net-tools
+
+　・vimインストール
+   # yum install vim
+
+　・selinux無効化
+　　# cp -pr /etc/selinux/config /etc/selinux/config.org
+　　# vim /etc/selinux/config
+      #SELINUX=enforcing ←#を追記
+       SELINUX=disabled  ←追記
+
+■セキュリティ設定
+　・参考【https://qiita.com/Trouble_SUM/items/8591d7388cd7c0a792bc】
+
+　・rootログオン無効
+　　# vim /etc/ssh/sshd_config
+　　PermitRootLogin no　←追記
+ 
+　・公開鍵認証への変更
+　　－teratermでssh認証鍵を生成
+　　　公開鍵の保存
+　　　秘密鍵の保存
+
+　　－teratermの公開鍵を、Linux側に送る。
+　　－一般ユーザにログインして、以下を実施。
+　　　# cd /home/ユーザ名/
+      # mkdir .ssh
+　　　# chmod 700 ./ssh
+　　　# mv id_rsa.pub .ssh/authorized_keys
+      # cd .ssh
+      # chmod 600 authorized_keys
+
+　　　# vim /etc/ssh/sshd_config
+　　　　PermitRootLogin no　←追記
+　　    PubkeyAuthentication yes
+　　　　PasswordAuthentication yes
+
+　　　# systemctl restart sshd
+
+
+　・ポート番号変更
+　　
+
+
+
